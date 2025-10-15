@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Text>RAA_Dim_Skills - Command 1</Text>
+    <Description>Some description</Description>
+    <Assembly>RAA_Dim_Skills\RAA_Dim_Skills.dll</Assembly>
+    <FullClassName>RAA_Dim_Skills.Command1</FullClassName>
+    <ClientId>302ac6c0-9cce-4ea1-b918-9fd9f523de4f</ClientId>
+    <VendorId>com.YOUR COMPANY NAME</VendorId>
+    <VendorDescription>YOUR COMPANY NAME, YOUR COMPANY URL</VendorDescription>
+  </AddIn>
+  <AddIn Type="Command">
+    <Text>RAA_Dim_Skills - Command 2</Text>
+    <Description>Some description</Description>
+    <Assembly>RAA_Dim_Skills\RAA_Dim_Skills.dll</Assembly>
+    <FullClassName>RAA_Dim_Skills.Command2</FullClassName>
+    <ClientId>139649f8-b429-4042-93d3-06d1b56edd97</ClientId>
+    <VendorId>com.YOUR COMPANY NAME</VendorId>
+    <VendorDescription>YOUR COMPANY NAME, YOUR COMPANY URL</VendorDescription>
+  </AddIn>
+  <AddIn Type="Application">
+    <Name>RAA_Dim_Skills</Name>
+    <Assembly>RAA_Dim_Skills\RAA_Dim_Skills.dll</Assembly>
+    <FullClassName>RAA_Dim_Skills.App</FullClassName>
+    <ClientId>dbf75cb2-d3fa-4fd4-b016-e58fb4c9ba0e</ClientId>
+    <VendorId>com.YOUR COMPANY NAME</VendorId>
+    <VendorDescription>YOUR COMPANY NAME, YOUR COMPANY URL</VendorDescription>
+  </AddIn>
+</RevitAddIns>
