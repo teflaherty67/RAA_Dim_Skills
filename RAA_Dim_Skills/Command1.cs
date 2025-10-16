@@ -48,11 +48,31 @@ namespace RAA_Dim_Skills
             PlanarFace returnFace = null;
 
             // get all the wall solids
-            var solids = GetSolids(selectedElem);
+            List<Solid> solids = GetSolids(selectedElem);
 
+            // loop through each solid
+            foreach (Solid curSolid in solids)
+            {
+                // loop through the faces of the solid
+                foreach (Face curFace in curSolid.Faces)
+                {
+                    // check if planar face
+                    if (curFace is PlanarFace)
+                    {
+                        // cast as planar face
+                        PlanarFace curPF = (PlanarFace)curFace;
+
+                        // check if normals are almost equal
+                        if (curPF.FaceNormal.IsAlmostEqualTo(orientation))                        
+                            returnFace = curPF;
+                    }
+                }
+            }
+
+            return returnFace;
         }
 
-        private object GetSolids(Element selectedElem)
+        private List<Solid> GetSolids(Element selectedElem)
         {
             List<Solid> m_returnList = new List<Solid>();
 
@@ -64,8 +84,24 @@ namespace RAA_Dim_Skills
             // get the geometry element
             GeometryElement geomElem = selectedElem.get_Geometry(opt);
 
+            // loop through each geometry object in the element
+            foreach (GeometryObject curObject in geomElem)
+            {
+                // check if solid
+                if (curObject is Solid)
+                {
+                    Solid curSolid = (Solid)curObject;
 
+                    // check if solid volume is greater than 0 & # of faces > 0
+                    if (curSolid.Volume > 0.0 && curSolid.Faces.Size > 0)
+                    {
+                        // add solid to return list
+                        m_returnList.Add(curSolid);
+                    }
+                }
+            }
 
+            return m_returnList;
         }
 
         internal static PushButtonData GetButtonData()
