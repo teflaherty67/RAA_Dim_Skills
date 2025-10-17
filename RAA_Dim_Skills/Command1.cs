@@ -56,8 +56,32 @@ namespace RAA_Dim_Skills
 
                 // order the edges in descending order
                 List<Edge> sortedEdges = listEdges.OrderByDescending(e => e.AsCurve().Length).ToList();
+
+                // assign values to the references
                 wallRef1 = sortedEdges[0].Reference;
                 wallref2 = sortedEdges[1].Reference;
+
+                // add first wall reference to reference array
+                refArray.Append(wallRef1);
+
+                // create a category list for doors and windows
+                List<BuiltInCategory> catList = new List<BuiltInCategory>() { BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows };
+
+                // create an Element Multicategory Filter
+                ElementMulticategoryFilter catFilter = new ElementMulticategoryFilter(catList);
+
+                // get doors and windows from wall & create references
+                List<ElementId> wallElemIds = selectedWall.GetDependentElements(catFilter).ToList();
+
+                // loop through each element id
+                foreach (ElementId curElemId in wallElemIds)
+                {
+                    // cast the element Id as an element (Family Instance)
+                    FamilyInstance curFI = curDoc.GetElement(curElemId) as FamilyInstance;
+
+                    // create a referecne for the family instance
+                    Reference curRef = GetSpecialFamilyReference(curFI, SpecialReferenceType.CenterLR);
+                }
 
             }
             else
@@ -68,6 +92,122 @@ namespace RAA_Dim_Skills
             }
 
                 return Result.Succeeded;
+        }
+
+        public enum SpecialReferenceType
+        {
+            Left = 0,
+            CenterLR = 1,
+            Right = 2,
+            Front = 3,
+            CenterFB = 4,
+            Back = 5,
+            Bottom = 6,
+            CenterElevation = 7,
+            Top = 8
+        }
+
+        private Reference GetSpecialFamilyReference(FamilyInstance inst, SpecialReferenceType refType)
+        {
+            // source for this method: https://thebuildingcoder.typepad.com/blog/2016/04/stable-reference-string-magic-voodoo.html
+
+            Reference indexRef = null;
+
+            int idx = (int)refType;
+
+            if (inst != null)
+            {
+                Document dbDoc = inst.Document;
+
+                Options geomOptions = new Options();
+                geomOptions.ComputeReferences = true;
+                geomOptions.DetailLevel = ViewDetailLevel.Undefined;
+                geomOptions.IncludeNonVisibleObjects = true;
+
+                GeometryElement gElement = inst.get_Geometry(geomOptions);
+                GeometryInstance gInst = gElement.First() as GeometryInstance;
+
+                String sampleStableRef = null;
+
+                if (gInst != null)
+                {
+                    GeometryElement gSymbol = gInst.GetSymbolGeometry();
+
+                    if (gSymbol != null)
+                    {
+                        foreach (GeometryObject geomObj in gSymbol)
+                        {
+                            if (geomObj is Solid)
+                            {
+                                Solid solid = geomObj as Solid;
+
+                                if (solid.Faces.Size > 0)
+                                {
+                                    Face face = solid.Faces.get_Item(0);
+                                    sampleStableRef = face.Reference.ConvertToStableRepresentation(dbDoc);
+                                    break;
+                                }
+                            }
+                            else if (geomObj is Curve)
+                            {
+                                Curve curve = geomObj as Curve;
+                                Reference curveRef = curve.Reference;
+                                if (curveRef != null)
+                                {
+                                    sampleStableRef = curve.Reference.ConvertToStableRepresentation(dbDoc);
+                                    break;
+                                }
+
+                            }
+                            else if (geomObj is Point)
+                            {
+                                Point point = geomObj as Point;
+                                sampleStableRef = point.Reference.ConvertToStableRepresentation(dbDoc);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (sampleStableRef != null)
+                    {
+                        String[] refTokens = sampleStableRef.Split(new char[] { ':' });
+
+                        String customStableRef = refTokens[0] + ":"
+                          + refTokens[1] + ":" + refTokens[2] + ":"
+                          + refTokens[3] + ":" + idx.ToString();
+
+                        indexRef = Reference.ParseFromStableRepresentation(dbDoc, customStableRef);
+
+                        GeometryObject geoObj = inst.GetGeometryObjectFromReference(indexRef);
+
+                        if (geoObj != null)
+                        {
+                            String finalToken = "";
+                            if (geoObj is Edge)
+                            {
+                                finalToken = ":LINEAR";
+                            }
+
+                            if (geoObj is Face)
+                            {
+                                finalToken = ":SURFACE";
+                            }
+
+                            customStableRef += finalToken;
+                            indexRef = Reference.ParseFromStableRepresentation(dbDoc, customStableRef);
+                        }
+                        else
+                        {
+                            indexRef = null;
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception("No Symbol Geometry found...");
+                }
+            }
+            return indexRef;
         }
 
         private bool IsLineVertical(Line line)
