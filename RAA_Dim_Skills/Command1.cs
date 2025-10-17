@@ -31,6 +31,29 @@ namespace RAA_Dim_Skills
                 // get the face of the wall
                 Face wallFace = GetFace(selectedWall, selectedWall.Orientation);
 
+                // create an array of edge arrays
+                EdgeArrayArray edgeArrays = wallFace.EdgeLoops;
+
+                // create an edge array of the overall wall edges
+                EdgeArray wallEdges = edgeArrays.get_Item(0);
+
+                // create a list to hold the edges
+                List<Edge> listEdges = new List<Edge>();
+
+                // loop through the edges
+                foreach (Edge curEdge in wallEdges)
+                {
+                    // cast the edge as a line
+                    Line line = curEdge.AsCurve() as Line;
+
+                    // check if line is vertical
+                    if (IsLineVertical(line) == true)
+                    {
+                        // add to edge list
+                        listEdges.Add(curEdge);
+                    }
+                }
+
             }
             else
             {
@@ -40,6 +63,14 @@ namespace RAA_Dim_Skills
             }
 
                 return Result.Succeeded;
+        }
+
+        private bool IsLineVertical(Line line)
+        {
+            if (line.Direction.IsAlmostEqualTo(XYZ.BasisZ) || line.Direction.IsAlmostEqualTo(-XYZ.BasisZ))
+                return true;
+            else
+                return false;
         }
 
         private Face GetFace(Element selectedElem, XYZ orientation)
