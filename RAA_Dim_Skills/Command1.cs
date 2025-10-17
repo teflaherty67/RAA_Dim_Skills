@@ -54,6 +54,11 @@ namespace RAA_Dim_Skills
                     }
                 }
 
+                // order the edges in descending order
+                List<Edge> sortedEdges = listEdges.OrderByDescending(e => e.AsCurve().Length).ToList();
+                wallRef1 = sortedEdges[0].Reference;
+                wallref2 = sortedEdges[1].Reference;
+
             }
             else
             {
