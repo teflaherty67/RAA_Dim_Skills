@@ -81,7 +81,13 @@ namespace RAA_Dim_Skills
 
                     // create a referecne for the family instance
                     Reference curRef = GetSpecialFamilyReference(curFI, SpecialReferenceType.CenterLR);
+
+                    // add the reference to the reference array
+                    refArray.Append(curRef);
                 }
+
+                // add second wall reference to reference array
+                refArray.Append(wallref2);
 
             }
             else
