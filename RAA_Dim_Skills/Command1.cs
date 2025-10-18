@@ -89,6 +89,31 @@ namespace RAA_Dim_Skills
                 // add second wall reference to reference array
                 refArray.Append(wallref2);
 
+                // get wall location curve
+                LocationCurve wallLoc = selectedWall.Location as LocationCurve;
+
+                // cast as a line
+                Line wallLine = wallLoc.Curve as Line;
+
+                // create some location points for the offset
+                XYZ offset1 = GetOffsetByWallOrientation(wallLine.GetEndPoint(0), selectedWall.Orientation,5);
+                XYZ offset2 = GetOffsetByWallOrientation(wallLine.GetEndPoint(1), selectedWall.Orientation, 5);
+
+                // create the dimension line
+                Line dimLine = Line.CreateBound(offset1, offset2);
+
+                // create a transaction to create the dimension
+                using (Transaction t = new Transaction(curDoc))
+                {
+                    // start the transaction
+                    t.Start("Create Dimensions");
+
+                    // create the dimension
+                    Dimension newDim = curDoc.Create.NewDimension(uidoc.ActiveView, dimLine, refArray);
+
+                    // commit the transaction
+                    t.Commit();
+                }
             }
             else
             {
@@ -98,6 +123,17 @@ namespace RAA_Dim_Skills
             }
 
                 return Result.Succeeded;
+        }
+
+        private XYZ GetOffsetByWallOrientation(XYZ point, XYZ orientation, int value)
+        {
+           // create new vector
+           XYZ newVector = orientation.Multiply(value);
+
+           // create return point
+           XYZ returnPoint = point.Add(newVector);
+
+           return returnPoint;
         }
 
         public enum SpecialReferenceType
