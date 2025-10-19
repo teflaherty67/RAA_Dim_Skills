@@ -24,6 +24,7 @@ namespace RAA_Dim_Skills
 
                 // create a reference array to hold the references for dimensioning
                 ReferenceArray refArray = new ReferenceArray();
+                ReferenceArray refArray2 = new ReferenceArray();
 
                 // create 2 intial references for the wall edges
                 Reference wallRef1 = null, wallref2 = null;
@@ -64,6 +65,10 @@ namespace RAA_Dim_Skills
                 // add first wall reference to reference array
                 refArray.Append(wallRef1);
 
+                // add wall references to second reference array for overall dimension
+                refArray2.Append(wallRef1);
+                refArray2.Append(wallref2);
+
                 // create a category list for doors and windows
                 List<BuiltInCategory> catList = new List<BuiltInCategory>() { BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows };
 
@@ -96,11 +101,18 @@ namespace RAA_Dim_Skills
                 Line wallLine = wallLoc.Curve as Line;
 
                 // create some location points for the offset
-                XYZ offset1 = GetOffsetByWallOrientation(wallLine.GetEndPoint(0), selectedWall.Orientation,5);
+                XYZ offset1 = GetOffsetByWallOrientation(wallLine.GetEndPoint(0), selectedWall.Orientation, 5);
                 XYZ offset2 = GetOffsetByWallOrientation(wallLine.GetEndPoint(1), selectedWall.Orientation, 5);
+
+                // create some location points for the overall dimension offset
+                XYZ offset3 = GetOffsetByWallOrientation(wallLine.GetEndPoint(0), selectedWall.Orientation, 7);
+                XYZ offset4 = GetOffsetByWallOrientation(wallLine.GetEndPoint(1), selectedWall.Orientation, 7);
 
                 // create the dimension line
                 Line dimLine = Line.CreateBound(offset1, offset2);
+
+                // create the dimension line
+                Line dimLine2 = Line.CreateBound(offset3, offset4);
 
                 // create a transaction to create the dimension
                 using (Transaction t = new Transaction(curDoc))
@@ -110,6 +122,12 @@ namespace RAA_Dim_Skills
 
                     // create the dimension
                     Dimension newDim = curDoc.Create.NewDimension(uidoc.ActiveView, dimLine, refArray);
+
+                    if (wallElemIds.Count > 0)
+                    {
+                        // create the overall dimension
+                        Dimension overallDim = curDoc.Create.NewDimension(uidoc.ActiveView, dimLine2, refArray2);                        
+                    }
 
                     // commit the transaction
                     t.Commit();
